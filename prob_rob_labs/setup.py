@@ -33,11 +33,13 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'robot_open_door = robot_open_door.robot_open_door:main',
             'gz_twist_publisher = gz_twist_publisher.gz_twist_publisher:main',
             'image_mean_feature_x = image_mean_feature_x.image_mean_feature_x:main',
             'flaky_door_opener = flaky_door_opener.flaky_door_opener:main',
             'gz_pose_publisher = gz_pose_publisher.gz_pose_publisher:main',
             'cmd_vel_noise_injector = cmd_vel_noise_injector.cmd_vel_noise_injector:main',
+            'step_response = lab4_odometry.step_response:main',
         ],
     }
 )
