@@ -44,6 +44,7 @@ setup(
             'odometry_error = lab4_odometry.odometry_error:main',
             'covariance_analysis = lab4_odometry.covariance_analysis:main',
             'landmark_measurement = lab5_localization_vision.landmark_measurement:main',
+            'landmark_error = lab5_localization_vision.landmark_error:main',
         ],
     }
 )

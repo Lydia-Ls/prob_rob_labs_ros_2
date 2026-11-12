@@ -8,6 +8,7 @@ from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import CameraInfo
 from std_msgs.msg import Float64
 from prob_rob_msgs.msg import Point2DArrayStamped
+from geometry_msgs.msg import Vector3Stamped
 
 from .landmark_pixel import landmark_pixel
 
@@ -41,6 +42,7 @@ class LandmarkMeasurement(Node):
 
         self.distance_pub = self.create_publisher(Float64, f'/landmark_{color}/distance', 10)
         self.bearing_pub = self.create_publisher(Float64, f'/landmark_{color}/bearing', 10)
+        self.measurement_pub = self.create_publisher(Vector3Stamped, f'/landmark_{color}/measurement', 10)
 
     def camera_callback(self, msg):
         # Projection matrix P
@@ -80,6 +82,14 @@ class LandmarkMeasurement(Node):
         self.bearing_pub.publish(Float64(data=bearing))
 
         self.get_logger().info(f'distance: {distance:.3f} m, ' f'bearing: {bearing:.3f} rad')
+        self.distance_pub.publish(Float64(data=distance))
+
+        # publish distance and bearing together with a timestamp
+        measurement_msg = Vector3Stamped()
+        measurement_msg.header = msg.header
+        measurement_msg.vector.x = distance
+        measurement_msg.vector.y = bearing
+        self.measurement_pub.publish(measurement_msg)
 
 
 def main(args=None):
