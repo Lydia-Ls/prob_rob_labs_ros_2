@@ -43,6 +43,7 @@ setup(
             'ekf_odometry = lab4_odometry.EKF_odometry:main',
             'odometry_error = lab4_odometry.odometry_error:main',
             'covariance_analysis = lab4_odometry.covariance_analysis:main',
+            'landmark_measurement = lab5_localization_vision.landmark_measurement:main',
         ],
     }
 )
