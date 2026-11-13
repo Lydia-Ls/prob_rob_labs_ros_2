@@ -1,6 +1,8 @@
 # landmark_error.py
 
 import math
+import csv
+from datetime import datetime
 
 import rclpy
 from rclpy.node import Node
@@ -35,6 +37,7 @@ class LandmarkError(Node):
         self.declare_parameter('landmark_color', 'cyan')
         self.declare_parameter('base_frame', 'base_footprint')
         self.declare_parameter('camera_frame', 'camera_rgb_frame')
+        self.declare_parameter('output_csv', '')
         color = self.get_parameter('landmark_color').value.lower()
         if color not in LANDMARKS:
             raise ValueError(f'Unknown landmark color: {color}')
@@ -42,6 +45,22 @@ class LandmarkError(Node):
         self.landmark_x, self.landmark_y = LANDMARKS[color]
         self.base_frame = self.get_parameter('base_frame').value
         self.camera_frame = self.get_parameter('camera_frame').value
+
+        output_csv = self.get_parameter('output_csv').value
+        if not output_csv:
+            output_csv = f'lab5_{color}_{datetime.now():%Y%m%d_%H%M%S}.csv'
+        self.csv_file = open(output_csv, 'w', newline='')
+        self.writer = csv.writer(self.csv_file)
+        self.writer.writerow([
+            'time',
+            'measured_distance',
+            'measured_bearing',
+            'true_distance',
+            'true_bearing',
+            'distance_error',
+            'bearing_error'
+        ])
+        self.get_logger().info(f'Saving CSV to {output_csv}')
 
         # TF: camera pose relative to robot base
         self.tf_buffer = Buffer()
@@ -100,9 +119,21 @@ class LandmarkError(Node):
         self.distance_error_pub.publish(Float64(data=distance_error))
         self.bearing_error_pub.publish(Float64(data=bearing_error))
 
+        time_s = measurement.header.stamp.sec + measurement.header.stamp.nanosec * 1e-9
+        self.writer.writerow([
+            time_s,
+            measured_distance,
+            measured_bearing,
+            true_distance,
+            true_bearing,
+            distance_error,
+            bearing_error
+        ])
+
         # Print results every 50 samples
         self.n += 1
         if self.n % 50 == 0:
+            self.csv_file.flush()
             self.get_logger().info(
                 f'd={measured_distance:.3f} m, '
                 f'd_true={true_distance:.3f} m, '
@@ -121,6 +152,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
+        node.csv_file.close()
         node.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()
